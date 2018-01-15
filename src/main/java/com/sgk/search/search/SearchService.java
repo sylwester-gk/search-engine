@@ -9,10 +9,10 @@ public interface SearchService {
 
     /**
      * Add a document to the index
-     * @param file name of indexed file
-     * @param data content of the file
+     * @param name name of indexed document
+     * @param data content of the document
      */
-    void index(String file, String data);
+    void processDocument(String name, String data);
 
     /**
      * Search the database for the given term
