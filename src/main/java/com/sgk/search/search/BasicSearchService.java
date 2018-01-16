@@ -3,9 +3,7 @@ package com.sgk.search.search;
 import com.sgk.search.loader.Loader;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,7 +12,6 @@ import java.util.stream.Collectors;
  * and TF-IDF for term weight calculation
  */
 @Slf4j
-@Service
 public class BasicSearchService implements SearchService {
 
     private long totalNumberOfIndexedDocuments;
@@ -41,7 +38,6 @@ public class BasicSearchService implements SearchService {
         private double tfidfWeight;
     }
 
-    @PostConstruct
     @Override
     public void indexAll(Loader source) {
         totalNumberOfIndexedDocuments = source.getTotalDocumentCount();
@@ -62,21 +58,22 @@ public class BasicSearchService implements SearchService {
         Set<String> toProcess = new HashSet<>(tokens);
 
         toProcess.forEach(term -> {
-            if (!index.keySet().contains(term)) index.put(term, new HashSet<>());
-            Set<String> set = index.get(term);
+            Set<String> set =index.computeIfAbsent(term, key -> new HashSet<>());
             set.add(name);
         });
 
         index.keySet().forEach(term -> {
             double termFrequency = (double) Collections.frequency(tokens, term) / tokens.size();
-            if (!tfMatrix.keySet().contains(term)) tfMatrix.put(term, new HashMap<>());
-            Map<String, Double> map = tfMatrix.get(term);
+            Map<String, Double> map = tfMatrix.computeIfAbsent(term, key -> new HashMap<>());
             map.put(name, termFrequency);
         });
 
         log.info("Indexed document: {}", name);
     }
 
+    /**
+     * Compute index for all loaded documents
+     */
     private void buildIndex() {
         tfMatrix.forEach((term, termFrequenciesPerDocument) -> {
             double idf = Math.log((double) totalNumberOfIndexedDocuments / index.get(term).size());
@@ -84,9 +81,6 @@ public class BasicSearchService implements SearchService {
             termFrequenciesPerDocument.forEach((docName, termFrequency) -> {
                         double tfidfValue = termFrequency * idf;
                         log.debug("tf-idf doc {} term {} tf-idf {}", docName, term, tfidfValue);
-
-                        // if (tfidfValue == 0) return;
-                        // is it reasonable to store 0 values, as search method is filtering them out?
 
                         List<TfidfEntry> tfidfWeights = tfidfIndex.computeIfAbsent(term, keyTerm -> new LinkedList<>());
 
@@ -97,15 +91,20 @@ public class BasicSearchService implements SearchService {
                     }
             );
 
-            // Sort loaded
+            // Sort loaded data
             tfidfIndex.get(term).sort(Comparator.comparing(TfidfEntry::getTfidfWeight).reversed());
         });
     }
 
 
+    /**
+     * Search for given term and return a list of documents containing it, ordered by TF-IDF weights.
+     * @param term to be found
+     * @return list of document names
+     */
     @Override
     public List<String> search(String term) {
-        List<TfidfEntry> tfidfEntries = tfidfIndex.get(term);
+        List<TfidfEntry> tfidfEntries = tfidfIndex.getOrDefault(term, Collections.emptyList());
         return tfidfEntries.stream()
                 .filter(e -> e.getTfidfWeight() > 0)
                 .map(TfidfEntry::getName)
