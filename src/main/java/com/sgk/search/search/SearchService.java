@@ -1,5 +1,7 @@
 package com.sgk.search.search;
 
+import com.sgk.search.loader.Loader;
+
 import java.util.List;
 
 /**
@@ -8,11 +10,11 @@ import java.util.List;
 public interface SearchService {
 
     /**
-     * Add a document to the index
-     * @param name name of indexed document
-     * @param data content of the document
+     * Index all documents from source
+     * @param source of documents
      */
-    void processDocument(String name, String data);
+    void indexAll(Loader source);
+
 
     /**
      * Search the database for the given term
