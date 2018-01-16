@@ -3,9 +3,7 @@ package com.sgk.search.search;
 import com.sgk.search.loader.Loader;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,7 +12,6 @@ import java.util.stream.Collectors;
  * and TF-IDF for term weight calculation
  */
 @Slf4j
-@Service
 public class BasicSearchService implements SearchService {
 
     private long totalNumberOfIndexedDocuments;
@@ -41,7 +38,6 @@ public class BasicSearchService implements SearchService {
         private double tfidfWeight;
     }
 
-    @PostConstruct
     @Override
     public void indexAll(Loader source) {
         totalNumberOfIndexedDocuments = source.getTotalDocumentCount();
@@ -85,9 +81,6 @@ public class BasicSearchService implements SearchService {
                         double tfidfValue = termFrequency * idf;
                         log.debug("tf-idf doc {} term {} tf-idf {}", docName, term, tfidfValue);
 
-                        // if (tfidfValue == 0) return;
-                        // is it reasonable to store 0 values, as search method is filtering them out?
-
                         List<TfidfEntry> tfidfWeights = tfidfIndex.computeIfAbsent(term, keyTerm -> new LinkedList<>());
 
                         TfidfEntry entry = new TfidfEntry();
@@ -97,7 +90,7 @@ public class BasicSearchService implements SearchService {
                     }
             );
 
-            // Sort loaded
+            // Sort loaded data
             tfidfIndex.get(term).sort(Comparator.comparing(TfidfEntry::getTfidfWeight).reversed());
         });
     }
@@ -105,7 +98,7 @@ public class BasicSearchService implements SearchService {
 
     @Override
     public List<String> search(String term) {
-        List<TfidfEntry> tfidfEntries = tfidfIndex.get(term);
+        List<TfidfEntry> tfidfEntries = tfidfIndex.getOrDefault(term, Collections.emptyList());
         return tfidfEntries.stream()
                 .filter(e -> e.getTfidfWeight() > 0)
                 .map(TfidfEntry::getName)

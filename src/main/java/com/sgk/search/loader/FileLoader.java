@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 @Slf4j
-@Component
 public class FileLoader implements Loader {
 
     @Value("${data.path}")
