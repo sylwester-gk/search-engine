@@ -17,11 +17,6 @@ public class BasicSearchService implements SearchService {
     private long totalNumberOfIndexedDocuments;
 
     /**
-     * term -> [file]
-     */
-    private Map<String, Set<String>> index = new HashMap<>();
-
-    /**
      * term -> [file -> tf]
      */
     private Map<String, Map<String, Double>> tfMatrix = new HashMap<>();
@@ -58,11 +53,13 @@ public class BasicSearchService implements SearchService {
         Set<String> toProcess = new HashSet<>(tokens);
 
         toProcess.forEach(term -> {
-            Set<String> set =index.computeIfAbsent(term, key -> new HashSet<>());
-            set.add(name);
+            List<TfidfEntry> set = tfidfIndex.computeIfAbsent(term, key -> new LinkedList<>());
+            TfidfEntry entry = new TfidfEntry();
+            entry.setName(name);
+            set.add(entry);
         });
 
-        index.keySet().forEach(term -> {
+        tfidfIndex.keySet().forEach(term -> {
             double termFrequency = (double) Collections.frequency(tokens, term) / tokens.size();
             Map<String, Double> map = tfMatrix.computeIfAbsent(term, key -> new HashMap<>());
             map.put(name, termFrequency);
@@ -76,18 +73,19 @@ public class BasicSearchService implements SearchService {
      */
     private void buildIndex() {
         tfMatrix.forEach((term, termFrequenciesPerDocument) -> {
-            double idf = Math.log((double) totalNumberOfIndexedDocuments / index.get(term).size());
+            double idf = Math.log((double) totalNumberOfIndexedDocuments / tfidfIndex.get(term).size());
 
             termFrequenciesPerDocument.forEach((docName, termFrequency) -> {
                         double tfidfValue = termFrequency * idf;
                         log.debug("tf-idf doc {} term {} tf-idf {}", docName, term, tfidfValue);
 
-                        List<TfidfEntry> tfidfWeights = tfidfIndex.computeIfAbsent(term, keyTerm -> new LinkedList<>());
+                        List<TfidfEntry> tfidfWeights = tfidfIndex.get(term);
 
-                        TfidfEntry entry = new TfidfEntry();
-                        entry.setName(docName);
-                        entry.setTfidfWeight(tfidfValue);
-                        tfidfWeights.add(entry);
+                        tfidfWeights.stream()
+                            .filter(entry -> docName.equals(entry.getName()))
+                                .forEach( entry ->
+                                entry.setTfidfWeight(tfidfValue)
+                        );
                     }
             );
 
