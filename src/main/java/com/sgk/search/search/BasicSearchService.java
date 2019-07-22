@@ -52,11 +52,12 @@ public class BasicSearchService implements SearchService {
 
         Set<String> toProcess = new HashSet<>(tokens);
 
+        // we need one entry for each term
         toProcess.forEach(term -> {
-            List<TfidfEntry> set = tfidfIndex.computeIfAbsent(term, key -> new LinkedList<>());
+            List<TfidfEntry> entryList = tfidfIndex.computeIfAbsent(term, key -> new LinkedList<>());
             TfidfEntry entry = new TfidfEntry();
             entry.setName(name);
-            set.add(entry);
+            entryList.add(entry);
         });
 
         tfidfIndex.keySet().forEach(term -> {
@@ -73,7 +74,7 @@ public class BasicSearchService implements SearchService {
      */
     private void buildIndex() {
         tfMatrix.forEach((term, termFrequenciesPerDocument) -> {
-            double idf = Math.log((double) totalNumberOfIndexedDocuments / tfidfIndex.get(term).size());
+            double idf = Math.log((double) totalNumberOfIndexedDocuments / 1 + tfidfIndex.get(term).size());
 
             termFrequenciesPerDocument.forEach((docName, termFrequency) -> {
                         double tfidfValue = termFrequency * idf;
@@ -105,7 +106,7 @@ public class BasicSearchService implements SearchService {
         List<TfidfEntry> tfidfEntries = tfidfIndex.getOrDefault(term, Collections.emptyList());
         return tfidfEntries.stream()
                 .filter(e -> e.getTfidfWeight() > 0)
-                .map(TfidfEntry::getName)
+                .map(e -> e.getName() + ": " + e.getTfidfWeight())
                 .collect(Collectors.toList());
     }
 }
