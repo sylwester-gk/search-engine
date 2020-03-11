@@ -4,7 +4,7 @@ import com.sgk.search.loader.FileLoader;
 import com.sgk.search.loader.Loader;
 import com.sgk.search.search.BasicSearchService;
 import com.sgk.search.search.LoaderAwareSearchEngine;
-import com.sgk.search.search.SearchEngine;
+import com.findwise.SearchEngine;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

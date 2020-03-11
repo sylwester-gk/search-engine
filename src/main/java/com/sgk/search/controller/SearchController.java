@@ -1,6 +1,7 @@
 package com.sgk.search.controller;
 
-import com.sgk.search.search.SearchEngine;
+import com.findwise.IndexEntry;
+import com.findwise.SearchEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,7 @@ public class SearchController {
 
     @GetMapping(value = "/search={query}", produces = "application/json")
     public @ResponseBody
-    List<String> search(@PathVariable String query) {
+    List<IndexEntry> search(@PathVariable String query) {
         return searchService.search(query);
     }
 }

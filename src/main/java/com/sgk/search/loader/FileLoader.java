@@ -1,6 +1,7 @@
 package com.sgk.search.loader;
 
 import com.sgk.search.model.Document;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -11,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 @Slf4j
+@Setter
 public class FileLoader implements Loader {
 
     @Value("${data.path}")
