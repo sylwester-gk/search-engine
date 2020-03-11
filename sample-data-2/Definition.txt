@@ -1,0 +1,47 @@
+Definition
+The tf–idf is the product of two statistics, term frequency and inverse document frequency. There are various ways for determining the exact values of both statistics.
+A formula that aims to define the importance of a keyword or phrase within a document or a web page.
+Variants of term frequency (tf) weight
+weighting scheme	tf weight
+binary	{\displaystyle {0,1}}{0,1}
+raw count	{\displaystyle f_{t,d}}f_{{t,d}}
+term frequency	{\displaystyle f_{t,d}{\Bigg /}{\sum _{t'\in d}{f_{t',d}}}}{\displaystyle f_{t,d}{\Bigg /}{\sum _{t'\in d}{f_{t',d}}}}
+log normalization	{\displaystyle \log(1+f_{t,d})}\log(1+f_{{t,d}})
+double normalization 0.5	{\displaystyle 0.5+0.5\cdot {\frac {f_{t,d}}{\max _{\{t'\in d\}}{f_{t',d}}}}}{\displaystyle 0.5+0.5\cdot {\frac {f_{t,d}}{\max _{\{t'\in d\}}{f_{t',d}}}}}
+double normalization K	{\displaystyle K+(1-K){\frac {f_{t,d}}{\max _{\{t'\in d\}}{f_{t',d}}}}}{\displaystyle K+(1-K){\frac {f_{t,d}}{\max _{\{t'\in d\}}{f_{t',d}}}}}
+Term frequency
+In the case of the term frequency tf(t,d), the simplest choice is to use the raw count of a term in a document, i.e., the number of times that term t occurs in document d. If we denote the raw count by ft,d, then the simplest tf scheme is tf(t,d) = ft,d. Other possibilities include[5]:128
+
+Boolean "frequencies": tf(t,d) = 1 if t occurs in d and 0 otherwise;
+term frequency adjusted for document length : ft,d ÷ (number of words in d)
+logarithmically scaled frequency: tf(t,d) = log (1 + ft,d);[6]
+augmented frequency, to prevent a bias towards longer documents, e.g. raw frequency divided by the raw frequency of the most occurring term in the document:
+{\displaystyle \mathrm {tf} (t,d)=0.5+0.5\cdot {\frac {f_{t,d}}{\max\{f_{t',d}:t'\in d\}}}}{\displaystyle \mathrm {tf} (t,d)=0.5+0.5\cdot {\frac {f_{t,d}}{\max\{f_{t',d}:t'\in d\}}}}
+Inverse document frequency
+Variants of inverse document frequency (idf) weight
+weighting scheme	idf weight ({\displaystyle n_{t}=|\{d\in D:t\in d\}|}{\displaystyle n_{t}=|\{d\in D:t\in d\}|})
+unary	1
+inverse document frequency	{\displaystyle \log {\frac {N}{n_{t}}}=-\log {\frac {n_{t}}{N}}}{\displaystyle \log {\frac {N}{n_{t}}}=-\log {\frac {n_{t}}{N}}}
+inverse document frequency smooth	{\displaystyle \log \left({\frac {N}{1+n_{t}}}\right)+1}{\displaystyle \log \left({\frac {N}{1+n_{t}}}\right)+1}
+inverse document frequency max	{\displaystyle \log \left({\frac {\max _{\{t'\in d\}}n_{t'}}{1+n_{t}}}\right)}{\displaystyle \log \left({\frac {\max _{\{t'\in d\}}n_{t'}}{1+n_{t}}}\right)}
+probabilistic inverse document frequency	{\displaystyle \log {\frac {N-n_{t}}{n_{t}}}}\log {\frac  {N-n_{t}}{n_{t}}}
+The inverse document frequency is a measure of how much information the word provides, i.e., if it's common or rare across all documents. It is the logarithmically scaled inverse fraction of the documents that contain the word (obtained by dividing the total number of documents by the number of documents containing the term, and then taking the logarithm of that quotient):
+
+{\displaystyle \mathrm {idf} (t,D)=\log {\frac {N}{|\{d\in D:t\in d\}|}}} \mathrm{idf}(t, D) =  \log \frac{N}{|\{d \in D: t \in d\}|}
+with
+
+{\displaystyle N}N: total number of documents in the corpus {\displaystyle N={|D|}}N = {|D|}
+{\displaystyle |\{d\in D:t\in d\}|} |\{d \in D: t \in d\}|  : number of documents where the term {\displaystyle t}t appears (i.e., {\displaystyle \mathrm {tf} (t,d)\neq 0} \mathrm{tf}(t,d) \neq 0). If the term is not in the corpus, this will lead to a division-by-zero. It is therefore common to adjust the denominator to {\displaystyle 1+|\{d\in D:t\in d\}|}1 + |\{d \in D: t \in d\}|.
+
+Plot of different inverse document frequency functions: standard, smooth, probabilistic.
+Term frequency–Inverse document frequency
+Then tf–idf is calculated as
+
+{\displaystyle \mathrm {tfidf} (t,d,D)=\mathrm {tf} (t,d)\cdot \mathrm {idf} (t,D)}{\displaystyle \mathrm {tfidf} (t,d,D)=\mathrm {tf} (t,d)\cdot \mathrm {idf} (t,D)}
+A high weight in tf–idf is reached by a high term frequency (in the given document) and a low document frequency of the term in the whole collection of documents; the weights hence tend to filter out common terms. Since the ratio inside the idf's log function is always greater than or equal to 1, the value of idf (and tf–idf) is greater than or equal to 0. As a term appears in more documents, the ratio inside the logarithm approaches 1, bringing the idf and tf–idf closer to 0.
+
+Recommended tf–idf weighting schemes
+weighting scheme	document term weight	query term weight
+1	{\displaystyle f_{t,d}\cdot \log {\frac {N}{n_{t}}}}{\displaystyle f_{t,d}\cdot \log {\frac {N}{n_{t}}}}	{\displaystyle \left(0.5+0.5{\frac {f_{t,q}}{\max _{t}f_{t,q}}}\right)\cdot \log {\frac {N}{n_{t}}}}{\displaystyle \left(0.5+0.5{\frac {f_{t,q}}{\max _{t}f_{t,q}}}\right)\cdot \log {\frac {N}{n_{t}}}}
+2	{\displaystyle 1+\log f_{t,d}}1+\log f_{{t,d}}	{\displaystyle \log \left(1+{\frac {N}{n_{t}}}\right)}{\displaystyle \log \left(1+{\frac {N}{n_{t}}}\right)}
+3	{\displaystyle (1+\log f_{t,d})\cdot \log {\frac {N}{n_{t}}}}{\displaystyle (1+\log f_{t,d})\cdot \log {\frac {N}{n_{t}}}}	{\displaystyle (1+\log f_{t,q})\cdot \log {\frac {N}{n_{t}}}}{\displaystyle (1+\log f_{t,q})\cdot \log {\frac {N}{n_{t}}}}

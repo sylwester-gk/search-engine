@@ -1,10 +1,17 @@
 package com.sgk.search.search;
 
 import com.sgk.search.loader.Loader;
-import lombok.Data;
+import com.sgk.search.model.TfIdfEntry;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -12,101 +19,101 @@ import java.util.stream.Collectors;
  * and TF-IDF for term weight calculation
  */
 @Slf4j
-public class BasicSearchService implements SearchService {
+public class BasicSearchService implements LoaderAwareSearchEngine {
 
+    public static final String TOKENIZER_REGEX = "\\W+";
     private long totalNumberOfIndexedDocuments;
 
     /**
      * term -> [file -> tf]
      */
-    private Map<String, Map<String, Double>> tfMatrix = new HashMap<>();
-
+    private Map<String, Map<String, Double>> tfPerFile = new HashMap<>();
 
     /**
      * term -> [file -> tfidf weight]
      */
-    private Map<String, List<TfidfEntry>> tfidfIndex = new HashMap<>();
+    private Map<String, List<TfIdfEntry>> tfidfIndex = new HashMap<>();
 
-    @Data
-    private class TfidfEntry {
-        private String name;
-        private double tfidfWeight;
-    }
 
     @Override
     public void indexAll(Loader source) {
         totalNumberOfIndexedDocuments = source.getTotalDocumentCount();
         // load documents and calculate term frequencies
-        source.getDocuments().forEach(d -> processDocument(d.getName(), d.getData()));
+        source.getDocuments().forEach(d -> indexDocument(d.getName(), d.getData()));
         // calculate inverse document frequencies
         buildIndex();
     }
 
     /**
      * Add a document to the index
-     * @param name name of indexed document
-     * @param data content of the document
+     *
+     * @param documentName name of indexed document
+     * @param content content of the document
      */
-    private void processDocument(String name, String data) {
-        List<String> tokens = Arrays.asList(data.split("\\W+"));
+    @Override
+    public void indexDocument(String documentName, String content) {
+        List<String> tokens = Arrays.asList(content.split(TOKENIZER_REGEX));
 
         Set<String> toProcess = new HashSet<>(tokens);
 
         // we need one entry for each term
         toProcess.forEach(term -> {
-            List<TfidfEntry> entryList = tfidfIndex.computeIfAbsent(term, key -> new LinkedList<>());
-            TfidfEntry entry = new TfidfEntry();
-            entry.setName(name);
+            List<TfIdfEntry> entryList = tfidfIndex.computeIfAbsent(term, key -> new LinkedList<>());
+            TfIdfEntry entry = new TfIdfEntry();
+            entry.setDocumentName(documentName);
             entryList.add(entry);
         });
 
         tfidfIndex.keySet().forEach(term -> {
             double termFrequency = (double) Collections.frequency(tokens, term) / tokens.size();
-            Map<String, Double> map = tfMatrix.computeIfAbsent(term, key -> new HashMap<>());
-            map.put(name, termFrequency);
+            Map<String, Double> map = tfPerFile.computeIfAbsent(term, key -> new HashMap<>());
+            map.put(documentName, termFrequency);
         });
 
-        log.info("Indexed document: {}", name);
+        log.info("Indexed document: {}", documentName);
     }
 
     /**
      * Compute index for all loaded documents
      */
     private void buildIndex() {
-        tfMatrix.forEach((term, termFrequenciesPerDocument) -> {
+        tfPerFile.forEach((term, termFrequenciesPerDocument) -> {
             double idf = Math.log((double) totalNumberOfIndexedDocuments / 1 + tfidfIndex.get(term).size());
 
             termFrequenciesPerDocument.forEach((docName, termFrequency) -> {
                         double tfidfValue = termFrequency * idf;
                         log.debug("tf-idf doc {} term {} tf-idf {}", docName, term, tfidfValue);
 
-                        List<TfidfEntry> tfidfWeights = tfidfIndex.get(term);
+                        List<TfIdfEntry> tfidfWeights = tfidfIndex.get(term);
 
                         tfidfWeights.stream()
-                            .filter(entry -> docName.equals(entry.getName()))
-                                .forEach( entry ->
-                                entry.setTfidfWeight(tfidfValue)
-                        );
+                                .filter(entry -> docName.equals(entry.getDocumentName()))
+                                .findFirst()
+                                .ifPresent(entry ->
+                                        entry.setTfIdfWeight(tfidfValue)
+                                );
                     }
             );
 
             // Sort loaded data
-            tfidfIndex.get(term).sort(Comparator.comparing(TfidfEntry::getTfidfWeight).reversed());
+            tfidfIndex.get(term).sort(Comparator.comparing(TfIdfEntry::getTfIdfWeight).reversed());
         });
     }
 
-
     /**
      * Search for given term and return a list of documents containing it, ordered by TF-IDF weights.
+     *
      * @param term to be found
+     *
      * @return list of document names
      */
     @Override
     public List<String> search(String term) {
-        List<TfidfEntry> tfidfEntries = tfidfIndex.getOrDefault(term, Collections.emptyList());
+        List<TfIdfEntry> tfidfEntries = tfidfIndex.getOrDefault(term, Collections.emptyList());
         return tfidfEntries.stream()
-                .filter(e -> e.getTfidfWeight() > 0)
-                .map(e -> e.getName() + ": " + e.getTfidfWeight())
+                .filter(e -> e.getTfIdfWeight() > 0)
+                .map(TfIdfEntry::getDocumentName)
                 .collect(Collectors.toList());
     }
+
 }

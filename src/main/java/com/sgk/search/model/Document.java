@@ -1,4 +1,4 @@
-package com.sgk.search.loader.model;
+package com.sgk.search.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -1,0 +1,12 @@
+Justification of idf
+Idf was introduced, as "term specificity", by Karen Spärck Jones in a 1972 paper. Although it has worked well as a heuristic, its theoretical foundations have been troublesome for at least three decades afterward, with many researchers trying to find information theoretic justifications for it.[7]
+
+Spärck Jones's own explanation did not propose much theory, aside from a connection to Zipf's law.[7] Attempts have been made to put idf on a probabilistic footing,[8] by estimating the probability that a given document d contains a term t as the relative document frequency,
+
+{\displaystyle P(t|D)={\frac {|\{d\in D:t\in d\}|}{N}},}{\displaystyle P(t|D)={\frac {|\{d\in D:t\in d\}|}{N}},}
+so that we can define idf as
+
+{\displaystyle {\begin{aligned}\mathrm {idf} &=-\log P(t|D)\\&=\log {\frac {1}{P(t|D)}}\\&=\log {\frac {N}{|\{d\in D:t\in d\}|}}\end{aligned}}}{\displaystyle {\begin{aligned}\mathrm {idf} &=-\log P(t|D)\\&=\log {\frac {1}{P(t|D)}}\\&=\log {\frac {N}{|\{d\in D:t\in d\}|}}\end{aligned}}}
+Namely, the inverse document frequency is the logarithm of "inverse" relative document frequency.
+
+This probabilistic interpretation in turn takes the same form as that of self-information. However, applying such information-theoretic notions to problems in information retrieval leads to problems when trying to define the appropriate event spaces for the required probability distributions: not only documents need to be taken into account, but also queries and terms.[7]

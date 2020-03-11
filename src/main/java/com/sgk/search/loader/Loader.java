@@ -1,6 +1,6 @@
 package com.sgk.search.loader;
 
-import com.sgk.search.loader.model.Document;
+import com.sgk.search.model.Document;
 
 import java.util.stream.Stream;
 
@@ -9,7 +9,6 @@ import java.util.stream.Stream;
  */
 public interface Loader {
     /**
-     *
      * @return total number of documents that are available for the Loader
      */
     long getTotalDocumentCount();

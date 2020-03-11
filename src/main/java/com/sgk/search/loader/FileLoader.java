@@ -1,7 +1,6 @@
 package com.sgk.search.loader;
 
-
-import com.sgk.search.loader.model.Document;
+import com.sgk.search.model.Document;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -28,7 +27,7 @@ public class FileLoader implements Loader {
     }
 
     @Override
-    public Stream<Document> getDocuments()  {
+    public Stream<Document> getDocuments() {
         try {
             return Files.list(Paths.get(dataPath))
                     .filter(Files::isRegularFile)
