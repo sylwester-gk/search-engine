@@ -3,7 +3,6 @@ package com.sgk.search.config;
 import com.sgk.search.loader.FileLoader;
 import com.sgk.search.loader.Loader;
 import com.sgk.search.search.BasicSearchService;
-import com.sgk.search.search.LoaderAwareSearchEngine;
 import com.findwise.SearchEngine;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,8 +17,8 @@ public class SearchServiceConfig {
 
     @Bean
     public SearchEngine searchService(Loader loader) {
-        LoaderAwareSearchEngine searchService = new BasicSearchService();
-        searchService.indexAll(loader);
+        SearchEngine searchService = new BasicSearchService();
+        loader.getDocuments().forEach(d -> searchService.indexDocument(d.getName(), d.getData()));
         return searchService;
     }
 }

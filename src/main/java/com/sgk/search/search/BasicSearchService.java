@@ -1,7 +1,7 @@
 package com.sgk.search.search;
 
 import com.findwise.IndexEntry;
-import com.sgk.search.loader.Loader;
+import com.findwise.SearchEngine;
 import com.sgk.search.model.IndexEntryImpl;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Arrays;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * and TF-IDF for term weight calculation
  */
 @Slf4j
-public class BasicSearchService implements LoaderAwareSearchEngine {
+public class BasicSearchService implements SearchEngine {
 
     public static final String TOKENIZER_REGEX = "\\W+";
     private long totalNumberOfIndexedDocuments;
@@ -35,15 +35,6 @@ public class BasicSearchService implements LoaderAwareSearchEngine {
      */
     private Map<String, List<IndexEntry>> tfidfIndex = new HashMap<>();
 
-
-    @Override
-    public void indexAll(Loader source) {
-        // load documents and calculate term frequencies
-        source.getDocuments().forEach(d -> indexDocument(d.getName(), d.getData()));
-        // calculate inverse document frequencies
-        buildIndex();
-    }
-
     /**
      * Add a document to the index
      *
@@ -53,7 +44,9 @@ public class BasicSearchService implements LoaderAwareSearchEngine {
     @Override
     public void indexDocument(String id, String content) {
 
-        List<String> tokens = Arrays.asList(content.split(TOKENIZER_REGEX));
+        List<String> tokens = Arrays.stream(content.split(TOKENIZER_REGEX))
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
 
         Set<String> toProcess = new HashSet<>(tokens);
 
@@ -72,7 +65,7 @@ public class BasicSearchService implements LoaderAwareSearchEngine {
         });
 
         totalNumberOfIndexedDocuments++;
-
+        buildIndex();
         log.info("Indexed document: {}", id);
     }
 
@@ -112,7 +105,7 @@ public class BasicSearchService implements LoaderAwareSearchEngine {
      */
     @Override
     public List<IndexEntry> search(String term) {
-        List<IndexEntry> indexEntries = tfidfIndex.getOrDefault(term, Collections.emptyList());
+        List<IndexEntry> indexEntries = tfidfIndex.getOrDefault(term.trim().toLowerCase(), Collections.emptyList());
         return indexEntries.stream()
                 .filter(e -> e.getScore() > 0)
                 .collect(Collectors.toList());

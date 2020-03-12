@@ -1,0 +1,1 @@
+All components with a react front-end has a package.json file that contains commons-js dependencies. Make sure this file does not contain any snapshot dependencies.  There is no check when performing a release that guards against this. 

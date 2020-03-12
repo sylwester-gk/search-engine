@@ -9,7 +9,7 @@ import java.util.List;
 
 @Slf4j
 public class SearchTest extends AbstractSearchTest {
-    protected static List<Document> CORPUS = new ArrayList<Document>() {
+    protected static List<Document> CORPUS = new ArrayList<>() {
         {
             add(new Document("Document 1", "the brown fox jumped over the brown dog"));
             add(new Document("Document 2", "the lazy brown dog sat in the corner"));
@@ -21,7 +21,7 @@ public class SearchTest extends AbstractSearchTest {
     public static void initialize() {
         searchEngine = new BasicSearchService();
         // load documents and calculate term frequencies
-        CORPUS.forEach(d -> searchEngine.indexDocument(d.getName(), d.getData()));
+        CORPUS.forEach(d -> AbstractSearchTest.searchEngine.indexDocument(d.getName(), d.getData()));
     }
 
     @Test

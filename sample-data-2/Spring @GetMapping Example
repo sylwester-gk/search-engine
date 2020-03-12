@@ -1,0 +1,1 @@
+@GetMapping is specialized version of @RequestMapping annotation that acts as a shortcut for @RequestMapping(method = RequestMethod.GET). @GetMapping annotated methods handle the HTTP GET requests matched with given URI expression. e.g 
