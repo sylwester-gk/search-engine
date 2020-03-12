@@ -78,7 +78,6 @@ public class BasicSearchService implements SearchEngine {
 
             termFrequenciesPerDocument.forEach((docName, termFrequency) -> {
                         double tfidf = termFrequency * idf;
-                        log.debug("tf-idf doc {} term {} tf-idf {}", docName, term, tfidf);
 
                         List<IndexEntry> tfIdfWeights = tfidfIndex.get(term);
 

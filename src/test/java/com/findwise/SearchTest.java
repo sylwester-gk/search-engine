@@ -1,13 +1,11 @@
 package com.findwise;
 
 import com.sgk.search.search.BasicSearchService;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 public class SearchTest extends AbstractSearchTest {
     protected static List<Document> CORPUS = new ArrayList<>() {
         {
@@ -21,7 +19,7 @@ public class SearchTest extends AbstractSearchTest {
     public static void initialize() {
         searchEngine = new BasicSearchService();
         // load documents and calculate term frequencies
-        CORPUS.forEach(d -> AbstractSearchTest.searchEngine.indexDocument(d.getName(), d.getData()));
+        CORPUS.forEach(d -> searchEngine.indexDocument(d.getName(), d.getData()));
     }
 
     @Test
